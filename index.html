@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>BUZZ IN // CYBERPUNK TRIVIA</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #020617;
+        --cyan: #00f5ff;
+        --magenta: #ff00c8;
+        --lime: #39ff14;
+        --red: #ff3333;
+        --gold: #ffd700;
+        --orange: #ff8c00;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: #fff;
+        font-family: "Share Tech Mono", monospace;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image:
+          linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        animation: gridScroll 12s linear infinite;
+      }
+      @keyframes gridScroll {
+        0% {
+          background-position: 0 0;
+        }
+        100% {
+          background-position: 40px 40px;
+        }
+      }
+
+      /* ── SETUP SCREEN ─────────────────────────────── */
+      #setup-screen {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        max-width: 460px;
+        padding: 40px 24px 48px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        animation: fadeIn 0.5s ease;
+      }
+      .setup-logo {
+        font-family: "Orbitron", monospace;
+        font-size: clamp(38px, 10vw, 64px);
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--cyan), var(--magenta));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: center;
+        letter-spacing: 0.1em;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+      .setup-sub {
+        font-size: clamp(9px, 2.5vw, 11px);
+        letter-spacing: 0.28em;
+        color: rgba(255, 255, 255, 0.28);
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .field-group {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .setup-label {
+        font-size: clamp(9px, 2.5vw, 10px);
+        letter-spacing: 0.22em;
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .setup-input {
+        width: 100%;
+        font-family: "Share Tech Mono", monospace;
+        font-size: clamp(13px, 3.5vw, 15px);
+        letter-spacing: 0.06em;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 12px;
+        color: #fff;
+        padding: clamp(13px, 3.5vw, 16px) clamp(14px, 4vw, 18px);
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        -webkit-appearance: none;
+      }
+      .setup-input:focus {
+        border-color: var(--cyan);
+        box-shadow: 0 0 16px rgba(0, 245, 255, 0.15);
+      }
+      .setup-select {
+        width: 100%;
+        font-family: "Share Tech Mono", monospace;
+        font-size: clamp(12px, 3.5vw, 14px);
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 12px;
+        color: #fff;
+        padding: clamp(13px, 3.5vw, 16px) clamp(14px, 4vw, 18px);
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: border-color 0.2s;
+      }
+      .setup-select:focus {
+        border-color: var(--cyan);
+      }
+      .setup-select option {
+        background: #0a0f1e;
+        color: #fff;
+      }
+      .setup-divider {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 2px 0;
+      }
+      .setup-divider::before,
+      .setup-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .setup-divider span {
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.2);
+        letter-spacing: 0.2em;
+        white-space: nowrap;
+      }
+      .setup-error {
+        font-size: clamp(10px, 2.5vw, 11px);
+        color: var(--red);
+        letter-spacing: 0.12em;
+        text-align: center;
+        min-height: 18px;
+        width: 100%;
+      }
+      .setup-btn {
+        width: 100%;
+        padding: clamp(16px, 4.5vw, 20px);
+        font-family: "Orbitron", monospace;
+        font-size: clamp(13px, 3.5vw, 16px);
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        border: 1px solid var(--cyan);
+        border-radius: 14px;
+        background: rgba(0, 245, 255, 0.12);
+        color: var(--cyan);
+        cursor: pointer;
+        box-shadow: 0 0 28px rgba(0, 245, 255, 0.2);
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+        margin-top: 4px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .setup-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 40px rgba(0, 245, 255, 0.35);
+      }
+      .setup-btn:active {
+        transform: scale(0.97);
+      }
+
+      /* ── BUZZ SCREEN ───────────────────────────────── */
+      #buzz-screen {
+        display: none;
+        position: relative;
+        z-index: 10;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        padding: clamp(24px, 5vw, 40px) clamp(16px, 5vw, 32px)
+          clamp(28px, 6vw, 44px);
+      }
+      .buzz-top {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+      }
+      .buzz-game-label {
+        font-size: clamp(8px, 2vw, 10px);
+        letter-spacing: 0.3em;
+        color: rgba(255, 255, 255, 0.2);
+      }
+      .buzz-team-name {
+        font-family: "Orbitron", monospace;
+        font-size: clamp(22px, 6vw, 34px);
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-align: center;
+        line-height: 1.1;
+      }
+      .buzz-status-chip {
+        font-size: clamp(9px, 2.5vw, 11px);
+        letter-spacing: 0.18em;
+        padding: 5px 16px;
+        border-radius: 99px;
+        border: 1px solid;
+        transition: all 0.3s;
+        text-align: center;
+      }
+
+      .buzz-btn-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 16px 0;
+      }
+      #buzz-btn {
+        width: min(62vw, min(55vh, 280px));
+        height: min(62vw, min(55vh, 280px));
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition:
+          transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1),
+          box-shadow 0.15s,
+          opacity 0.3s;
+        position: relative;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        flex-shrink: 0;
+      }
+      #buzz-btn:active:not(:disabled) {
+        transform: scale(0.91) !important;
+      }
+      #buzz-btn:disabled {
+        cursor: default;
+      }
+      #buzz-btn::before {
+        content: "";
+        position: absolute;
+        inset: -10px;
+        border-radius: 50%;
+        border: 2px solid;
+        opacity: 0.3;
+        animation: ringPulse 2s ease-in-out infinite;
+      }
+      #buzz-btn::after {
+        content: "";
+        position: absolute;
+        inset: -20px;
+        border-radius: 50%;
+        border: 1px solid;
+        opacity: 0.15;
+        animation: ringPulse 2s ease-in-out infinite 0.4s;
+      }
+      @keyframes ringPulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.3;
+        }
+        50% {
+          transform: scale(1.04);
+          opacity: 0.5;
+        }
+      }
+
+      .btn-icon {
+        font-size: clamp(36px, 10vw, 56px);
+        line-height: 1;
+      }
+      .btn-label {
+        font-family: "Orbitron", monospace;
+        font-size: clamp(12px, 4vw, 20px);
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-align: center;
+      }
+      .btn-sub {
+        font-size: clamp(8px, 2.5vw, 11px);
+        letter-spacing: 0.18em;
+        opacity: 0.7;
+        text-align: center;
+      }
+
+      .buzz-bottom {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+      }
+      .buzz-connection {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: clamp(9px, 2.5vw, 11px);
+        letter-spacing: 0.15em;
+        color: rgba(255, 255, 255, 0.25);
+      }
+      .conn-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--lime);
+        box-shadow: 0 0 6px var(--lime);
+        animation: connPulse 1.5s ease-in-out infinite;
+        flex-shrink: 0;
+      }
+      .conn-dot.offline {
+        background: var(--red);
+        box-shadow: 0 0 6px var(--red);
+        animation: none;
+      }
+      .conn-dot.connecting {
+        background: var(--orange);
+        box-shadow: 0 0 6px var(--orange);
+      }
+      @keyframes connPulse {
+        0%,
+        100% {
+          opacity: 0.7;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      .buzz-room-label {
+        font-size: clamp(8px, 2vw, 10px);
+        letter-spacing: 0.25em;
+        color: rgba(255, 255, 255, 0.12);
+      }
+
+      /* States */
+      .state-waiting #buzz-btn {
+        background: radial-gradient(
+          circle at 40% 35%,
+          rgba(255, 255, 255, 0.1),
+          rgba(255, 255, 255, 0.03)
+        );
+        box-shadow:
+          0 0 50px rgba(255, 255, 255, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      }
+      .state-waiting #buzz-btn::before {
+        border-color: rgba(255, 255, 255, 0.35);
+      }
+      .state-waiting #buzz-btn::after {
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+      .state-waiting .btn-label {
+        color: rgba(255, 255, 255, 0.45);
+      }
+      .state-waiting .buzz-status-chip {
+        color: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .state-waiting #buzz-btn:disabled {
+        opacity: 0.4;
+      }
+
+      .state-ready #buzz-btn {
+        animation: btnPulse 1.4s ease-in-out infinite;
+      }
+      @keyframes btnPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.04);
+        }
+      }
+      .state-ready .buzz-status-chip {
+        animation: chipGlow 1s ease-in-out infinite;
+      }
+      @keyframes chipGlow {
+        0%,
+        100% {
+          box-shadow: 0 0 8px currentColor;
+        }
+        50% {
+          box-shadow: 0 0 22px currentColor;
+        }
+      }
+
+      .state-buzzed #buzz-btn {
+        animation: buzzedPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      @keyframes buzzedPop {
+        0% {
+          transform: scale(0.91);
+        }
+        100% {
+          transform: scale(1.07);
+        }
+      }
+
+      .state-locked #buzz-btn {
+        opacity: 0.2;
+        animation: none;
+      }
+
+      /* Who buzzed + result */
+      #who-buzzed {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: clamp(14px, 4vw, 20px);
+        text-align: center;
+        font-family: "Orbitron", monospace;
+        font-size: clamp(11px, 3.5vw, 16px);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: 20;
+      }
+      #who-buzzed.show {
+        transform: translateY(0);
+      }
+
+      #result-overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(12px, 4vw, 20px);
+        z-index: 50;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+      }
+      #result-overlay.show {
+        opacity: 1;
+      }
+      .result-icon {
+        font-size: clamp(60px, 18vw, 100px);
+        animation: iconBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      @keyframes iconBounce {
+        from {
+          transform: scale(0) rotate(-20deg);
+        }
+        to {
+          transform: scale(1) rotate(0);
+        }
+      }
+      .result-text {
+        font-family: "Orbitron", monospace;
+        font-size: clamp(24px, 7vw, 42px);
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-align: center;
+        animation: fadeUp 0.4s 0.2s ease both;
+      }
+      .result-pts {
+        font-family: "Orbitron", monospace;
+        font-size: clamp(14px, 4.5vw, 22px);
+        letter-spacing: 0.15em;
+        opacity: 0.75;
+        animation: fadeUp 0.4s 0.35s ease both;
+      }
+
+      .ripple {
+        position: fixed;
+        border-radius: 50%;
+        pointer-events: none;
+        animation: rippleAnim 0.9s ease forwards;
+        z-index: 5;
+      }
+      @keyframes rippleAnim {
+        from {
+          transform: scale(0);
+          opacity: 0.5;
+        }
+        to {
+          transform: scale(5);
+          opacity: 0;
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- SETUP -->
+    <div id="setup-screen">
+      <div class="setup-logo">BUZZ IN</div>
+      <p class="setup-sub">CYBERPUNK TRIVIA // TEAM BUZZER</p>
+
+      <div class="field-group">
+        <span class="setup-label">YOUR TEAM NAME</span>
+        <input
+          class="setup-input"
+          id="player-name"
+          placeholder="E.G. TEAM ALPHA"
+          maxlength="20"
+          autocomplete="off"
+          spellcheck="false"
+          style="text-transform: uppercase"
+        />
+      </div>
+
+      <div class="setup-divider"><span>PICK YOUR COLOR</span></div>
+
+      <div class="field-group">
+        <span class="setup-label">TEAM COLOR</span>
+        <select class="setup-select" id="team-color">
+          <option value="#00f5ff">⚡ CYAN</option>
+          <option value="#ff00c8">💜 MAGENTA</option>
+          <option value="#39ff14">🟢 LIME GREEN</option>
+          <option value="#ffd700">⭐ GOLD</option>
+          <option value="#ff8c00">🔥 ORANGE</option>
+          <option value="#a855f7">🔮 PURPLE</option>
+          <option value="#ff3333">❤️ RED</option>
+          <option value="#00ffaa">🌊 AQUA</option>
+        </select>
+      </div>
+
+      <div class="setup-divider"><span>ROOM CODE</span></div>
+
+      <div class="field-group">
+        <span class="setup-label">ROOM CODE (ASK YOUR HOST)</span>
+        <input
+          class="setup-input"
+          id="room-code"
+          placeholder="E.G. TRIVIA2026"
+          maxlength="20"
+          style="text-transform: uppercase; letter-spacing: 0.2em"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <div class="setup-error" id="setup-error"></div>
+      <button class="setup-btn" id="btn-join">⚡ JOIN GAME</button>
+    </div>
+
+    <!-- BUZZ -->
+    <div id="buzz-screen" class="state-waiting">
+      <div class="buzz-top">
+        <span class="buzz-game-label" id="room-label">ROOM: —</span>
+        <div class="buzz-team-name" id="display-name">TEAM NAME</div>
+        <div class="buzz-status-chip" id="status-chip">
+          WAITING FOR QUESTION…
+        </div>
+      </div>
+      <div class="buzz-btn-wrap">
+        <button id="buzz-btn" disabled>
+          <span class="btn-icon">⚡</span>
+          <span class="btn-label" id="btn-label">STAND BY</span>
+          <span class="btn-sub" id="btn-sub">WAIT FOR HOST</span>
+        </button>
+      </div>
+      <div class="buzz-bottom">
+        <div class="buzz-connection">
+          <div class="conn-dot connecting" id="conn-dot"></div>
+          <span id="conn-text">CONNECTING…</span>
+        </div>
+        <span class="buzz-room-label" id="bottom-room">—</span>
+      </div>
+    </div>
+
+    <div id="who-buzzed"></div>
+    <div id="result-overlay">
+      <div class="result-icon" id="result-icon">✅</div>
+      <div class="result-text" id="result-text">CORRECT!</div>
+      <div class="result-pts" id="result-pts">+10 POINTS</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script>
+      const SUPABASE_URL = "https://uwtzcevbskuwctwtbloj.supabase.co";
+      const SUPABASE_ANON_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3dHpjZXZic2t1d2N0d3RibG9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNDQwOTEsImV4cCI6MjA5MDcyMDA5MX0.nGpKbyoItGIj0XPe3IOipI90IkfpU8c0NHxmTA9mk7Q";
+
+      let supabaseClient = null,
+        channel = null;
+      let myName = "",
+        myColor = "#00f5ff",
+        myRoom = "TRIVIA",
+        gameState = "waiting";
+
+      const setupScreen = document.getElementById("setup-screen");
+      const buzzScreen = document.getElementById("buzz-screen");
+      const buzzBtn = document.getElementById("buzz-btn");
+      const btnLabel = document.getElementById("btn-label");
+      const btnSub = document.getElementById("btn-sub");
+      const statusChip = document.getElementById("status-chip");
+      const displayName = document.getElementById("display-name");
+      const roomLabel = document.getElementById("room-label");
+      const bottomRoom = document.getElementById("bottom-room");
+      const connDot = document.getElementById("conn-dot");
+      const connText = document.getElementById("conn-text");
+      const whoBuzzed = document.getElementById("who-buzzed");
+      const resultOverlay = document.getElementById("result-overlay");
+      const resultIcon = document.getElementById("result-icon");
+      const resultText = document.getElementById("result-text");
+      const resultPts = document.getElementById("result-pts");
+      const setupError = document.getElementById("setup-error");
+
+      // Auto-fill saved values
+      try {
+        const s = JSON.parse(localStorage.getItem("buzz_config") || "{}");
+        if (s.name) document.getElementById("player-name").value = s.name;
+        if (s.color) document.getElementById("team-color").value = s.color;
+        if (s.room) document.getElementById("room-code").value = s.room;
+      } catch (e) {}
+
+      document.getElementById("btn-join").addEventListener("click", joinGame);
+      document
+        .getElementById("player-name")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter") joinGame();
+        });
+      document.getElementById("room-code").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") joinGame();
+      });
+
+      function joinGame() {
+        const nameVal = document
+          .getElementById("player-name")
+          .value.trim()
+          .toUpperCase();
+        const colorVal = document.getElementById("team-color").value;
+        const roomVal =
+          document.getElementById("room-code").value.trim().toUpperCase() ||
+          "TRIVIA";
+        if (!nameVal) {
+          setupError.textContent = "⚠ ENTER YOUR TEAM NAME FIRST";
+          return;
+        }
+        setupError.textContent = "";
+        myName = nameVal;
+        myColor = colorVal;
+        myRoom = roomVal;
+        try {
+          localStorage.setItem(
+            "buzz_config",
+            JSON.stringify({ name: myName, color: myColor, room: myRoom }),
+          );
+        } catch (e) {}
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        connectChannel();
+      }
+
+      function connectChannel() {
+        setupScreen.style.opacity = "0.4";
+        setupScreen.style.pointerEvents = "none";
+        setConn("connecting", "CONNECTING…");
+        channel = supabaseClient.channel(`trivia-room-${myRoom}`, {
+          config: { broadcast: { self: false } },
+        });
+        channel
+          .on("broadcast", { event: "game_control" }, ({ payload }) =>
+            handleGameControl(payload),
+          )
+          .on("broadcast", { event: "buzz_event" }, ({ payload }) =>
+            handleBuzzEvent(payload),
+          )
+          .on("broadcast", { event: "answer_result" }, ({ payload }) =>
+            handleAnswerResult(payload),
+          )
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              setConn("online", "CONNECTED");
+              showBuzzScreen();
+            } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+              setConn("offline", "CONNECTION FAILED");
+              setupError.textContent =
+                "⚠ CONNECTION FAILED. CHECK ROOM CODE OR WIFI.";
+              setupScreen.style.opacity = "1";
+              setupScreen.style.pointerEvents = "auto";
+            }
+          });
+      }
+
+      function showBuzzScreen() {
+        setupScreen.style.display = "none";
+        buzzScreen.style.display = "flex";
+        displayName.textContent = myName;
+        displayName.style.color = myColor;
+        roomLabel.textContent = `ROOM: ${myRoom}`;
+        bottomRoom.textContent = myRoom;
+        statusChip.style.color = myColor;
+        statusChip.style.borderColor = myColor + "44";
+        statusChip.style.background = myColor + "11";
+        setGameState("waiting");
+      }
+
+      function handleGameControl({ action }) {
+        if (action === "open_buzz") setGameState("ready");
+        else if (action === "close_buzz") {
+          if (gameState !== "buzzed") setGameState("waiting");
+        } else if (action === "next_question" || action === "reset") {
+          hideResult();
+          hideWhoBuzzed();
+          setGameState("waiting");
+        }
+      }
+
+      function handleBuzzEvent(payload) {
+        if (
+          (gameState === "ready" || gameState === "waiting") &&
+          payload.name !== myName
+        ) {
+          setGameState("locked");
+          showWhoBuzzed(payload.name, payload.color, false);
+        }
+      }
+
+      function handleAnswerResult({ buzzer, result, pts }) {
+        if (buzzer === myName) showResult(result, pts);
+        else setGameState("waiting");
+        setTimeout(() => {
+          hideResult();
+          hideWhoBuzzed();
+          setGameState("waiting");
+        }, 3000);
+      }
+
+      buzzBtn.addEventListener("click", sendBuzz);
+      buzzBtn.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          sendBuzz();
+        },
+        { passive: false },
+      );
+
+      function sendBuzz() {
+        if (gameState !== "ready") return;
+        setGameState("buzzed");
+        const rect = buzzBtn.getBoundingClientRect();
+        const ripple = document.createElement("div");
+        ripple.className = "ripple";
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.cssText = `width:${size}px;height:${size}px;left:${rect.left + rect.width / 2 - size / 2}px;top:${rect.top + rect.height / 2 - size / 2}px;background:${myColor};`;
+        document.body.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 1000);
+        channel.send({
+          type: "broadcast",
+          event: "buzz_event",
+          payload: {
+            name: myName,
+            color: myColor,
+            room: myRoom,
+            ts: Date.now(),
+          },
+        });
+        showWhoBuzzed(myName, myColor, true);
+        vibrate([50, 30, 50]);
+      }
+
+      function setGameState(state) {
+        gameState = state;
+        buzzScreen.className = `state-${state}`;
+        buzzBtn.style.background = "";
+        buzzBtn.style.boxShadow = "";
+        switch (state) {
+          case "waiting":
+            buzzBtn.disabled = true;
+            btnLabel.textContent = "STAND BY";
+            btnSub.textContent = "WAIT FOR HOST";
+            statusChip.textContent = "WAITING FOR QUESTION…";
+            statusChip.style.color = "rgba(255,255,255,0.3)";
+            statusChip.style.borderColor = "rgba(255,255,255,0.1)";
+            statusChip.style.background = "rgba(255,255,255,0.03)";
+            buzzBtn.style.background = `radial-gradient(circle at 40% 35%,rgba(255,255,255,0.08),rgba(255,255,255,0.02))`;
+            buzzBtn.style.boxShadow = `0 0 40px rgba(255,255,255,0.06)`;
+            break;
+          case "ready":
+            buzzBtn.disabled = false;
+            btnLabel.textContent = "BUZZ IN!";
+            btnSub.textContent = "TAP TO ANSWER";
+            statusChip.textContent = "🟢 QUESTION ACTIVE — TAP!";
+            statusChip.style.color = myColor;
+            statusChip.style.borderColor = myColor + "55";
+            statusChip.style.background = myColor + "15";
+            buzzBtn.style.background = `radial-gradient(circle at 40% 35%,${myColor}30,${myColor}10)`;
+            buzzBtn.style.boxShadow = `0 0 80px ${myColor}33,0 0 130px ${myColor}15,inset 0 1px 0 ${myColor}40`;
+            vibrate([30]);
+            break;
+          case "buzzed":
+            buzzBtn.disabled = true;
+            btnLabel.textContent = "BUZZED!";
+            btnSub.textContent = "YOU'RE UP!";
+            statusChip.textContent = "⚡ YOU BUZZED FIRST!";
+            statusChip.style.color = myColor;
+            statusChip.style.borderColor = myColor;
+            statusChip.style.background = myColor + "22";
+            buzzBtn.style.background = `radial-gradient(circle at 40% 35%,${myColor}40,${myColor}18)`;
+            buzzBtn.style.boxShadow = `0 0 100px ${myColor}55,0 0 160px ${myColor}22,inset 0 1px 0 ${myColor}60`;
+            break;
+          case "locked":
+            buzzBtn.disabled = true;
+            btnLabel.textContent = "LOCKED";
+            btnSub.textContent = "SOMEONE ELSE BUZZED";
+            statusChip.textContent = "🔒 LOCKED OUT";
+            statusChip.style.color = "rgba(255,51,51,0.7)";
+            statusChip.style.borderColor = "rgba(255,51,51,0.3)";
+            statusChip.style.background = "rgba(255,51,51,0.05)";
+            buzzBtn.style.background = `radial-gradient(circle at 40% 35%,rgba(255,51,51,0.06),rgba(255,51,51,0.02))`;
+            break;
+        }
+      }
+
+      function showWhoBuzzed(name, color, isMe) {
+        whoBuzzed.textContent = isMe
+          ? `⚡ YOU BUZZED IN FIRST!`
+          : `⚡ ${name} BUZZED IN!`;
+        whoBuzzed.style.background = `linear-gradient(135deg,${color}22,${color}08)`;
+        whoBuzzed.style.borderTop = `2px solid ${color}`;
+        whoBuzzed.style.color = color;
+        whoBuzzed.classList.add("show");
+      }
+      function hideWhoBuzzed() {
+        whoBuzzed.classList.remove("show");
+      }
+
+      function showResult(result, pts) {
+        if (result === "correct") {
+          resultIcon.textContent = "✅";
+          resultText.textContent = "CORRECT!";
+          resultText.style.color = "#39ff14";
+          resultPts.textContent = `+${pts} POINTS`;
+          resultPts.style.color = "#39ff14";
+          resultOverlay.style.background =
+            "radial-gradient(ellipse at center,rgba(57,255,20,0.15),transparent 70%)";
+          vibrate([100, 50, 100, 50, 200]);
+        } else {
+          resultIcon.textContent = "❌";
+          resultText.textContent = "WRONG!";
+          resultText.style.color = "#ff3333";
+          resultPts.textContent = `-5 POINTS`;
+          resultPts.style.color = "#ff3333";
+          resultOverlay.style.background =
+            "radial-gradient(ellipse at center,rgba(255,51,51,0.12),transparent 70%)";
+          vibrate([200, 100, 200]);
+        }
+        resultOverlay.classList.add("show");
+        resultOverlay.style.pointerEvents = "auto";
+      }
+      function hideResult() {
+        resultOverlay.classList.remove("show");
+        resultOverlay.style.pointerEvents = "none";
+        resultIcon.style.animation = "none";
+        void resultIcon.offsetWidth;
+        resultIcon.style.animation = "";
+      }
+      function setConn(state, text) {
+        connDot.className = `conn-dot${state === "offline" ? " offline" : state === "connecting" ? " connecting" : ""}`;
+        connText.textContent = text;
+      }
+      function vibrate(p) {
+        try {
+          if (navigator.vibrate) navigator.vibrate(p);
+        } catch (e) {}
+      }
+    </script>
+  </body>
+</html>
